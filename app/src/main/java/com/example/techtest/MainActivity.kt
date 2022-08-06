@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import com.example.techtest.interfaces.ActivePaginationInterface
 import com.example.techtest.interfaces.OpenMusicWebViewInterface
@@ -26,7 +25,8 @@ import com.example.techtest.viewmodel.MainViewModel
 
 
 class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePaginationInterface {
-
+    //ViewModel Instance. It will be used to get and paginate the results to show, and to store the
+    //state of the application.
     private lateinit var mainViewModel: MainViewModel
 
     @ExperimentalMaterialApi
@@ -34,28 +34,36 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Instantiate the ViewModel
+        //Initializing the ViewModel
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-
         setContent{
-            mainViewModel.pagination()
-
+            //Call the Composable Function to show the title and to compose the LazyVerticalGrid
+            //This function will get as parameters the resultsList, of course, and two instance of
+            //the MainActivity that implements the function of two Interfaces. Thanks to these
+            //instances the LazyVerticalGrid will be able to perform the function needed to open the
+            //WebView, when an artWork is clicked, and to perform the pagination to get the following
+            //20 items.
             musicResultsView(
                 liveResults = mainViewModel.liveResults,
                 openMusicWebViewInterface = this,
                 activePaginationInterface = this)
+
+            //Call the pagination function for the first time so the first 20 result will be shown
+            mainViewModel.pagination()
         }
     }
 
-    //Interface Method
-    //Open the WebView of the passed url
+    //Interface Methods-----------------------------------------------------------------------------
+    //OpenMusicWebViewInterface
+    //This function will call a Composable Function to open a very very simple WebView
     override fun imageClicked(url: String) {
         setContent {
             musicWebView(url = url)
         }
     }
 
+    //Active PaginationInterface
     //The last index has been reached, so the results list must be updated
     override fun lastIndexReached() {
         mainViewModel.updateItems()
@@ -71,13 +79,12 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
 @ExperimentalMaterialApi
 @Composable
 private fun musicResultsView(
-    //liveResults: LiveData<List<Result>>,
     liveResults: List<Result>?,
     openMusicWebViewInterface: OpenMusicWebViewInterface,
     activePaginationInterface: ActivePaginationInterface
 ){
     Column() {
-        //Title
+        //Display the Title
         Text(
             text = "Play List",
             color = Color.White,

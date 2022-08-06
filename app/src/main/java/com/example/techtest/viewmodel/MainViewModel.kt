@@ -1,11 +1,9 @@
 package com.example.techtest.viewmodel
 
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techtest.model.Result
@@ -58,8 +56,8 @@ class MainViewModel: ViewModel() {
         //the main thread cause it could block the UI
         viewModelScope.launch(Dispatchers.IO) {
             //Here will be stored all the results fetched by the ServiceProvider, but the
-            //LazyVerticalGrid cannot access them all together, or there will be lag ploblems,
-            //especially because of the artworks to show (even if they are managed asyncrhonusly)
+            //LazyVerticalGrid cannot access them all together, or there will be lag problems,
+            //especially because of the artworks to show (even if they are managed asynchronously)
             results = serviceProvider?.fetchResults()
         }
     }
