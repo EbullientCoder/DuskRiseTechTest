@@ -8,6 +8,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun musicWebView(url: String){
+    //A very very basic WebView. It wasn't specified so I didn't add any fancy stuff.
 
     AndroidView(factory = {
         WebView(it).apply {

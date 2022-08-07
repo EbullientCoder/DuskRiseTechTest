@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -22,6 +23,10 @@ import com.example.techtest.R
 import com.example.techtest.model.Result
 
 
+//Composable function used to display every music result.
+//It takes two parameters as input:
+//The first is the results list
+//The second is a Lambda function to perform whenever an artwork is clicked
 @ExperimentalMaterialApi
 @Composable
 fun musicContainer(
@@ -42,6 +47,7 @@ fun musicContainer(
             result.artworkUrl100?.let {
                 //Display the Image
                 result.artworkUrl100?.let{ url ->
+                    //Here we have the artwork loaded asynchronously by the Glide Library
                     val artwork = loadImage(url = url, defaultImage = R.drawable.image_not_found).value
 
                     artwork?.let {
@@ -49,6 +55,10 @@ fun musicContainer(
                             bitmap = artwork.asImageBitmap(),
                             contentDescription = "Image not Found",
                             modifier = Modifier
+                                //To be sure that the artwork will be a square a used an aspectRatio
+                                //of 1f. Thanks to that I can avoid to set fixed height and width
+                                //parameters, and the Jetpack Compose will do all the magic needed to
+                                //fit the grid inside a screen of every possible size
                                 //.height(100.dp)
                                 //.width(100.dp)
                                 .aspectRatio(1f)
@@ -70,9 +80,10 @@ fun musicContainer(
                         .padding(horizontal = 5.dp)
                 ){
                     //Even if the majority of the Results have the Artist Name, the Song Name and the
-                    //Release Date, there are some of them that don't have this field (it happened),
-                    //so a NullPointerException is thrown. To evade this problem an "elvis operator"
-                    //is used.
+                    //Release Date, there are some of them that don't have those fields (it happened
+                    //to me once), so a NullPointerException would be thrown.
+                    //To avoid this problem an "elvis operator" is used, even if the compiler doesn't
+                    //like it.
 
                     //Artist Name
                     Text(

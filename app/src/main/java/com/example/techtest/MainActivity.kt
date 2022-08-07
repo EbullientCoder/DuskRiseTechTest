@@ -54,6 +54,8 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         }
     }
 
+
+
     //Interface Methods-----------------------------------------------------------------------------
     //OpenMusicWebViewInterface
     //This function will call a Composable Function to open a very very simple WebView

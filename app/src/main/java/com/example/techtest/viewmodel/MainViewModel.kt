@@ -17,24 +17,23 @@ class MainViewModel: ViewModel() {
     //scrolls down. In that way the App will not download all the items together, and this will
     //prevent crashes or slow responses if there are a lot of data to download. The problem is
     //that I can't specify the page I want to access, cause this API doesn't allow it... the only
-    //idea that I have is to 'manually' write in the url the range of items that I want to download
+    //idea that I have is to 'manually' write in the url the range of the items that I want to download
     //every time. For example:
     //First Scroll: download items from index 0 to 9
     //Second Scroll: download items from index 10 to 19 etc.
 
     //The problem is that I've never seen something like that and I don't know if it's possible.
     //Plus, data stored in Json file's array are not sorted when downloaded, so even if I manage to
-    //download 10 items a time, probably those items will be random. They will not be sorted.
+    //download 10 items at time, those items will be random. They will not be sorted.
     //PLUS, the deadline is tomorrow.
-    //For the first time I feel a bit lost.
 
     //Literally 3 hours later-----------------------------------------------------------------
 
-    //Only now I realized that the pagination is a technique used by the recyclerView (lazyView in
+    //Only now I realize that the pagination is a technique used by the recyclerView (lazyView in
     //Jetpack Compose) to display small groups of items, instead of all the items together,
     //to prevent lag...
-    //I don't know if it's a good idea to share my flow of thoughts this time, cause I feel a little
-    //dumb right now. At least I hope you will appreciate my stubbornness and willpower.
+    //I don't know if it's a good idea to share my flow of thoughts this time...
+    //At least I hope you will appreciate my stubbornness and willpower.
 
 
     //Service Provider
@@ -69,8 +68,12 @@ class MainViewModel: ViewModel() {
         //The if statement will block the copy of the results inside the variable that will be
         //observed by the LazyVerticalGrid. The idea is to create a sort of buffer to get chunks of
         //20 results per time.
-        if(!results.isNullOrEmpty() && results?.size!! >= currentItems)
-            liveResults = results?.slice(0 until currentItems)
+        if(!results.isNullOrEmpty()){
+            liveResults = if(currentItems >= results?.size!!)
+                results?.slice(0 until results?.size!!)
+            else
+                results?.slice(0 until currentItems)
+        }
     }
 
     //Update the currentItems to show 20 more results when needed.

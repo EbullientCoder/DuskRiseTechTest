@@ -3,6 +3,7 @@ package com.example.techtest.view
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -28,11 +29,11 @@ fun loadImage(url: String, @DrawableRes defaultImage: Int): MutableState<Bitmap?
             }
 
             override fun onLoadCleared(placeholder: Drawable?) {
-                //GG
+                Log.e(String(), "ERROR: The Default Image can't be loaded")
             }
         })
 
-    //Download the Real Image and store it inside a bitmap object
+    //Download the Artwork and store it inside a bitmap object
     Glide.with(LocalContext.current)
         .asBitmap()
         .load(url)
@@ -42,7 +43,7 @@ fun loadImage(url: String, @DrawableRes defaultImage: Int): MutableState<Bitmap?
             }
 
             override fun onLoadCleared(placeholder: Drawable?) {
-                //GG
+                Log.e(String(), "ERROR: The Artwork can't be loaded")
             }
         })
 

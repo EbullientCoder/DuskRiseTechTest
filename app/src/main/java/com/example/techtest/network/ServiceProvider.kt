@@ -10,7 +10,7 @@ class ServiceProvider private constructor(){
 
     //Used to Access to the Specified API
     //https://rss.applemarketingtools.com/api/v2/us/music/most-played/30/songs.json
-    private val url = "https://rss.applemarketingtools.com/api/v2/us/music/most-played/50/songs.json"
+    private val url = "https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/songs.json"
 
     companion object{
         //Singleton Instance
@@ -29,6 +29,7 @@ class ServiceProvider private constructor(){
     }
 
     //Function to fetch all the data from the Json file
+    //In this function are used OkHttp3 and Gson
     fun fetchResults(): List<Result>?{
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()

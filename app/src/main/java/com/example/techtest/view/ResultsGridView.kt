@@ -19,13 +19,21 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 @Composable
 fun resultsGrid(
-    //liveResults: LiveData<List<Result>>,
     liveResults: List<Result>?,
     openMusicWebViewInterface: OpenMusicWebViewInterface,
     activePaginationInterface: ActivePaginationInterface
 ){
-    //val results by liveResults.observeAsState(initial = emptyList())
-    val listState = rememberLazyListState()
+    //I tried a lot of things to make a fully function pagination service. I didn't expect it but it
+    //was the most challenging part.
+    //With a RecyclerView and an Adapter there are multiple solutions that could have resolved this
+    //problem, but with Jetpack Compose the documentation about this topic is a little scarce.
+    //I found an interesting library, Paging3, but I didn't have the time to master it, so I opted
+    //for a more naive solution.
+
+    //I even tried with LazyState to get the last index displayed, but it caused strange problems
+    //of flickering...
+
+    //val listState = rememberLazyListState()
 
     LazyVerticalGrid(
         cells = GridCells.Fixed(3),
@@ -34,11 +42,14 @@ fun resultsGrid(
             liveResults?.let {
                 itemsIndexed(it){ index, _ ->
 
+                    //Callback the function that will get the other 20 results
                     if(index == liveResults.lastIndex){
-                        GlobalScope.launch {
-                            delay(5000)
+                        //Simulate some waiting time to get the response
+                        /*GlobalScope.launch {
+                            delay(3000)
                             activePaginationInterface.lastIndexReached()
-                        }
+                        }*/
+                        activePaginationInterface.lastIndexReached()
                     }
 
                     musicContainer(
@@ -50,40 +61,13 @@ fun resultsGrid(
                     )
                 }
             }
-        },
-        state = listState
+        }
+        //state = listState
     )
 
-
+    //Flickering Artworks problems
+    //if(listState.layoutInfo.totalItemsCount == listState.layoutInfo.visibleItemsInfo)
 }
 
-/*
-@Composable
-fun InfiniteListHandler(
-    listState: LazyListState,
-    buffer: Int = 1,
-    onLoadMore: () -> Unit
-) {
-    val loadMore = remember {
-        derivedStateOf {
-            val layoutInfo = listState.layoutInfo
-            val totalItemsNumber = layoutInfo.totalItemsCount
-            val lastVisibleItemIndex = (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
 
-            lastVisibleItemIndex > (totalItemsNumber - buffer)
-        }
-    }
-
-    LaunchedEffect(loadMore) {
-        /*snapshotFlow { loadMore.value }
-            .distinctUntilChanged()
-            .collect {
-                onLoadMore()
-            }*/
-        snapshotFlow { loadMore.value }
-            .filter{it}
-            .collect{onLoadMore()}
-    }
-}
-*/
 
