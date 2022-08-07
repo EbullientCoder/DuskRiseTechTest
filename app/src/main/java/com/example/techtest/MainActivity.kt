@@ -38,7 +38,9 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         //Initializing the ViewModel
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        
+        //Call the pagination function for the first time so the first 20 result will be shown
+        mainViewModel.pagination()
+
         setContent{
             //Call the Composable Function to show the title and to compose the LazyVerticalGrid
             //This function will get as parameters the resultsList, of course, and two instance of
@@ -51,9 +53,6 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
                 openMusicWebViewInterface = this,
                 activePaginationInterface = this,
                 isLoading = mainViewModel.isLoading)
-
-            //Call the pagination function for the first time so the first 20 result will be shown
-            mainViewModel.pagination()
         }
     }
 

@@ -10,7 +10,7 @@ class ServiceProvider private constructor(){
 
     //Used to Access to the Specified API
     //https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/songs.json
-    private val url = "https://rss.applemarketingtools.com/api/v2/us/music/most-played/30/songs.json"
+    private val url = "https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/songs.json"
 
     companion object{
         //Singleton Instance
@@ -30,15 +30,24 @@ class ServiceProvider private constructor(){
 
     //Function to fetch all the data from the Json file
     //In this function are used OkHttp3 and Gson
-    fun fetchResults(): List<Result>?{
-        val request = Request.Builder().url(url).build()
-        val client = OkHttpClient()
+    fun fetchResults(): List<Result>{
+        var results: List<Result> = ArrayList()
 
-        val body = client.newCall(request).execute().body?.string()
-        val gson = GsonBuilder().create()
-        val musicFeed = gson.fromJson(body, MusicFeed::class.java)
+        //If there's no internet connection the request will fail
+        try {
+            val request = Request.Builder().url(url).build()
+            val client = OkHttpClient()
+            val gson = GsonBuilder().create()
 
-        return musicFeed?.feed?.results
+            val body = client.newCall(request).execute().body?.string()
+            val musicFeed = gson.fromJson(body, MusicFeed::class.java)
+
+            results = musicFeed.feed.results
+        }
+        finally {
+            //If the request fails than will be returned an empty list.
+            return results
+        }
     }
 }
 

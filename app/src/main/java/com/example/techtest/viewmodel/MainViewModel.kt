@@ -7,11 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.techtest.model.Genre
 import com.example.techtest.model.Result
 import com.example.techtest.network.ServiceProvider
 import kotlinx.coroutines.*
-
-
+import okhttp3.internal.notifyAll
 
 
 class MainViewModel: ViewModel() {
@@ -39,14 +39,15 @@ class MainViewModel: ViewModel() {
     //At least I hope you will appreciate my stubbornness and willpower.
 
 
-    //Service Provider
-    private var serviceProvider: ServiceProvider? = null
+    //The ServiceProvider will provide the functions needed to make a connection a get the Json file
+    private var serviceProvider: ServiceProvider = ServiceProvider.getInstance()!!
+
     //Items to copy in the live results
     private var currentItems = 20
 
     //I could have used the LiveData, but the Jetpack Compose Documentation says that the 'mutableState'
     //is designed to work efficiently with the Composable functions
-    private lateinit var results: Deferred<List<Result>?>
+    private lateinit var results: Deferred<List<Result>>
     var liveResults: MutableList<Result>? by mutableStateOf(mutableListOf())
 
     //Used to notify the Loading Bar when the Results are being fetched by the ServiceProvider
@@ -54,9 +55,6 @@ class MainViewModel: ViewModel() {
 
 
     init {
-        //The ServiceProvider will provide the functions needed to make a connection a get the Json file
-        serviceProvider = ServiceProvider.getInstance()
-
         //A Network Call is needed to fetch the Json File, and a Network Call can't be executed on
         //the main thread cause it could block the UI
         viewModelScope.launch(Dispatchers.IO) {
@@ -64,10 +62,10 @@ class MainViewModel: ViewModel() {
             //LazyVerticalGrid cannot access them all together, or there will be lag problems,
             //especially because of the artworks to show (even if they are managed asynchronously)
             //results = serviceProvider?.fetchResults()
-            results =  async { serviceProvider?.fetchResults() }
+            results =  async { serviceProvider.fetchResults() }
 
             //Notify the Loading bar to stop it's animation
-            if(!results.await().isNullOrEmpty()) isLoading = false
+            if(results.await().isNotEmpty()) isLoading = false
         }
     }
 
@@ -91,6 +89,11 @@ class MainViewModel: ViewModel() {
                     results.await()?.slice(0 until results.await()?.size!!) as MutableList<Result>?
                 else
                     results.await()?.slice(0 until currentItems) as MutableList<Result>?
+
+                /*if(currentItems >= results.await()?.size!!)
+                    liveResults!!.addAll(results.await()!!.subList(0, results.await()!!.size))
+                else
+                    liveResults!!.addAll(results.await()!!.subList(0, 20))*/
 
 
                 Log.e(String(), "Coroutine\n " +
