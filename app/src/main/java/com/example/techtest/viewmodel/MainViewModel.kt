@@ -47,6 +47,7 @@ class MainViewModel: ViewModel() {
     //I could have used the LiveData, but the Jetpack Compose Documentation says that the 'mutableState'
     //is designed to work efficiently with the Composable functions
     private lateinit var results: List<Result>
+    var resultsSize: Int by mutableStateOf(0)
     var liveResults: List<Result> by mutableStateOf(listOf())
 
     //Used to notify the Loading Bar when the Results are being fetched by the ServiceProvider
@@ -63,6 +64,7 @@ class MainViewModel: ViewModel() {
             //especially because of the artworks to show (even if they are managed asynchronously)
             //results = async { serviceProvider.fetchResults() }
             results = serviceProvider.fetchResults()
+            resultsSize = results.size
 
             //Notify the Loading bar to stop it's animation
             isLoading = false
@@ -80,6 +82,7 @@ class MainViewModel: ViewModel() {
         //observed by the LazyVerticalGrid. The idea is to create a sort of buffer to get chunks of
         //20 results per time.
         if(liveResults.size < results.size){
+
             //Simulating a slow response when paginating
             if(liveResults.isNotEmpty()) delay(2000)
 

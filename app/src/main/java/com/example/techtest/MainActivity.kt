@@ -79,8 +79,10 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
             mainViewModel.pagination()
         }
 
-        if(mainViewModel.liveResults.size < 30)
+        if(mainViewModel.liveResults.size < mainViewModel.resultsSize)
             Toast.makeText(this, "Loading more Items", Toast.LENGTH_SHORT).show()
+        else
+            Toast.makeText(this, "All the items have been loaded", Toast.LENGTH_SHORT).show()
     }
 }
 
