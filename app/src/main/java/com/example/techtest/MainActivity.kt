@@ -12,7 +12,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +26,9 @@ import com.example.techtest.view.loadingBar
 import com.example.techtest.viewmodel.MainViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.lang.Exception
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePaginationInterface {
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         //Get network connection
         var network = ConnectionLiveData(application)
 
+        //Observe network connectivity status
         network.observe(this, { isConnected ->
             if (isConnected){
                 Toast.makeText(this, "YOU ARE ONLINE", Toast.LENGTH_LONG).show()
@@ -94,8 +97,29 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
     //OpenMusicWebViewInterface
     //This function will call a Composable Function to open a very very simple WebView
     override fun imageClicked(url: String) {
-        setContent {
-            musicWebView(url = url)
+        //Notify the User that the song has been clicked
+        Toast.makeText(applicationContext, "Opening the WebView", Toast.LENGTH_SHORT).show()
+
+        GlobalScope.launch {
+            try {
+                //Connection Check
+                val checkUrl = URL(url)
+                val connection: HttpURLConnection = checkUrl.openConnection() as HttpURLConnection
+
+                //Reachable url
+                if(connection.responseCode == 200)
+                    setContent { musicWebView(url = url) }
+                else
+                    runOnUiThread{
+                        Toast.makeText(applicationContext, "ERROR: Can't open the WebView cause the url is unreachable", Toast.LENGTH_LONG).show()
+                    }
+            }
+            //No Internet
+            catch (e: Exception){
+                runOnUiThread{
+                    Toast.makeText(applicationContext, "ERROR: Can't open the connection", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 
