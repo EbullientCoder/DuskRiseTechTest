@@ -43,30 +43,27 @@ fun musicContainer(
         elevation = 0.dp
     ) {
         Column {
-            //Check if the result has an Image Url
-            result.artworkUrl100?.let {
-                //Display the Image
-                result.artworkUrl100?.let{ url ->
-                    //Here we have the artwork loaded asynchronously by the Glide Library
-                    val artwork = loadImage(url = url, defaultImage = R.drawable.image_not_found).value
+            //Display the Image
+            result.artworkUrl100?.let{ url ->
+                //Here we have the artwork loaded asynchronously by the Glide Library
+                val artwork = loadImage(url = url, defaultImage = R.drawable.image_not_found).value
 
-                    artwork?.let {
-                        Image(
-                            bitmap = artwork.asImageBitmap(),
-                            contentDescription = "Image not Found",
-                            modifier = Modifier
-                                //To be sure that the artwork will be a square a used an aspectRatio
-                                //of 1f. Thanks to that I can avoid to set fixed height and width
-                                //parameters, and the Jetpack Compose will do all the magic needed to
-                                //fit the grid inside a screen of every possible size
-                                //.height(100.dp)
-                                //.width(100.dp)
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(15.dp))
-                                .align(Alignment.CenterHorizontally),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                artwork?.let {
+                    Image(
+                        bitmap = artwork.asImageBitmap(),
+                        contentDescription = "Image not Found",
+                        modifier = Modifier
+                            //To be sure that the artwork will be a square a used an aspectRatio
+                            //of 1f. Thanks to that I can avoid to set fixed height and width
+                            //parameters, and the Jetpack Compose will do all the magic needed to
+                            //fit the grid inside a screen of every possible size
+                            //.height(100.dp)
+                            //.width(100.dp)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(15.dp))
+                            .align(Alignment.CenterHorizontally),
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
 
