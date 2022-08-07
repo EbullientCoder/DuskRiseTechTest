@@ -1,7 +1,6 @@
 package com.example.techtest
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.techtest.interfaces.ActivePaginationInterface
 import com.example.techtest.interfaces.OpenMusicWebViewInterface
@@ -24,7 +24,8 @@ import com.example.techtest.model.Result
 import com.example.techtest.view.musicWebView
 import com.example.techtest.view.loadingBar
 import com.example.techtest.viewmodel.MainViewModel
-import java.lang.IllegalArgumentException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePaginationInterface {
@@ -41,9 +42,9 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
         //Call the pagination function for the first time so the first 20 result will be shown
-        mainViewModel.pagination()
+        //mainViewModel.pagination()
 
-        setContent{
+        setContent {
             //Call the Composable Function to show the title and to compose the LazyVerticalGrid
             //This function will get as parameters the resultsList, of course, and two instance of
             //the MainActivity that implements the function of two Interfaces. Thanks to these
@@ -54,8 +55,10 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
                 liveResults = mainViewModel.liveResults,
                 openMusicWebViewInterface = this,
                 activePaginationInterface = this,
-                isLoading = mainViewModel.isLoading)
+                isLoading = mainViewModel.isLoading
+            )
         }
+
     }
 
 
@@ -72,10 +75,11 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
     //Active PaginationInterface
     //The last index has been reached, so the results list must be updated
     override fun lastIndexReached() {
-        mainViewModel.updateItems()
-        mainViewModel.pagination()
+        GlobalScope.launch {
+            mainViewModel.pagination()
+        }
 
-        if(mainViewModel.liveResults?.size!! < 30)
+        if(mainViewModel.liveResults.size < 30)
             Toast.makeText(this, "Loading more Items", Toast.LENGTH_SHORT).show()
     }
 }

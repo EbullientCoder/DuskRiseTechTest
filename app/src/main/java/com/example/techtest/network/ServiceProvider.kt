@@ -13,7 +13,7 @@ class ServiceProvider private constructor(){
 
     //Used to Access to the Specified API
     //https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/songs.json
-    private val url = "https://rss.applemarketingtools.com/api/v2/us/music/most-played/30/songs.json"
+    private val url = "https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/songs.json"
 
     companion object{
         //Singleton Instance
