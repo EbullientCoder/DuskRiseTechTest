@@ -1,6 +1,7 @@
 package com.example.techtest
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,6 +24,7 @@ import com.example.techtest.model.Result
 import com.example.techtest.view.musicWebView
 import com.example.techtest.view.loadingBar
 import com.example.techtest.viewmodel.MainViewModel
+import java.lang.IllegalArgumentException
 
 
 class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePaginationInterface {

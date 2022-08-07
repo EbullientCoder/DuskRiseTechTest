@@ -7,11 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.techtest.model.Genre
 import com.example.techtest.model.Result
 import com.example.techtest.network.ServiceProvider
 import kotlinx.coroutines.*
-import okhttp3.internal.notifyAll
 
 
 class MainViewModel: ViewModel() {
@@ -47,11 +45,13 @@ class MainViewModel: ViewModel() {
 
     //I could have used the LiveData, but the Jetpack Compose Documentation says that the 'mutableState'
     //is designed to work efficiently with the Composable functions
-    private lateinit var results: Deferred<List<Result>>
-    var liveResults: MutableList<Result>? by mutableStateOf(mutableListOf())
+    private var results: Deferred<List<Result>>? = null
+    //var liveResults: MutableList<Result> by mutableStateOf(mutableListOf())
+    var liveResults: List<Result> by mutableStateOf(listOf())
 
     //Used to notify the Loading Bar when the Results are being fetched by the ServiceProvider
     var isLoading: Boolean by mutableStateOf(true)
+
 
 
     init {
@@ -61,11 +61,10 @@ class MainViewModel: ViewModel() {
             //Here will be stored all the results fetched by the ServiceProvider, but the
             //LazyVerticalGrid cannot access them all together, or there will be lag problems,
             //especially because of the artworks to show (even if they are managed asynchronously)
-            //results = serviceProvider?.fetchResults()
-            results =  async { serviceProvider.fetchResults() }
+            results = async { serviceProvider.fetchResults() }
 
             //Notify the Loading bar to stop it's animation
-            if(results.await().isNotEmpty()) isLoading = false
+            if(results!!.await().isNotEmpty()) isLoading = false
         }
     }
 
@@ -78,27 +77,23 @@ class MainViewModel: ViewModel() {
             //The if statement will block the copy of the results inside the variable that will be
             //observed by the LazyVerticalGrid. The idea is to create a sort of buffer to get chunks of
             //20 results per time.
-            if(liveResults?.size!! < results.await()?.size!!){
+            if(results?.await() != null && liveResults.size < results!!.await().size){
+                val resultsSize = results?.await()?.size!!
 
                 //Simulating a slow response when paginating
                 if(!liveResults.isNullOrEmpty())
-                    delay(3000)
+                    delay(2000)
 
                 //Assign the new items to the List
-                liveResults = if(currentItems >= results.await()?.size!!)
-                    results.await()?.slice(0 until results.await()?.size!!) as MutableList<Result>?
+                liveResults = if(currentItems >= results?.await()?.size!!)
+                    results?.await()?.slice(0 until resultsSize)!!
                 else
-                    results.await()?.slice(0 until currentItems) as MutableList<Result>?
-
-                /*if(currentItems >= results.await()?.size!!)
-                    liveResults!!.addAll(results.await()!!.subList(0, results.await()!!.size))
-                else
-                    liveResults!!.addAll(results.await()!!.subList(0, 20))*/
+                    results?.await()?.slice(0 until currentItems)!!
 
 
-                Log.e(String(), "Coroutine\n " +
-                        "liveResults size: ${liveResults?.size}\n " +
-                        "results size: ${results.await()!!.size}\n")
+                /*Log.e(String(), "Coroutine\n " +
+                        "liveResults size: ${liveResults.size}\n " +
+                        "results size: ${results?.await()!!.size}\n")*/
             }
         }
     }

@@ -1,9 +1,12 @@
 package com.example.techtest.network
 
+import android.util.Log
 import com.example.techtest.model.MusicFeed
 import com.example.techtest.model.Result
 import com.google.gson.GsonBuilder
 import okhttp3.*
+import java.lang.Exception
+import java.lang.IllegalArgumentException
 
 
 class ServiceProvider private constructor(){
@@ -44,10 +47,14 @@ class ServiceProvider private constructor(){
 
             results = musicFeed.feed.results
         }
-        finally {
-            //If the request fails than will be returned an empty list.
-            return results
+        catch (e: IllegalArgumentException){
+            e.message?.let { Log.e(String(), it) }
         }
+        catch (e: Exception){
+            Log.e(String(), "ServiceProvider error: Request Failed")
+        }
+
+        return results
     }
 }
 
