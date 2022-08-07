@@ -12,15 +12,16 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.techtest.interfaces.ActivePaginationInterface
 import com.example.techtest.interfaces.OpenMusicWebViewInterface
 import com.example.techtest.view.resultsGrid
 import com.example.techtest.model.Result
+import com.example.techtest.network.ConnectionLiveData
 import com.example.techtest.view.musicWebView
 import com.example.techtest.view.loadingBar
 import com.example.techtest.viewmodel.MainViewModel
@@ -38,26 +39,52 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Initializing the ViewModel
-        mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        //Get network connection
+        var network = ConnectionLiveData(application)
 
-        //Call the pagination function for the first time so the first 20 result will be shown
-        //mainViewModel.pagination()
+        network.observe(this, { isConnected ->
+            if (isConnected){
+                Toast.makeText(this, "YOU ARE ONLINE", Toast.LENGTH_LONG).show()
 
-        setContent {
-            //Call the Composable Function to show the title and to compose the LazyVerticalGrid
-            //This function will get as parameters the resultsList, of course, and two instance of
-            //the MainActivity that implements the function of two Interfaces. Thanks to these
-            //instances the LazyVerticalGrid will be able to perform the function needed to open the
-            //WebView, when an artWork is clicked, and to perform the pagination to get the following
-            //20 items.
-            musicResultsView(
-                liveResults = mainViewModel.liveResults,
-                openMusicWebViewInterface = this,
-                activePaginationInterface = this,
-                isLoading = mainViewModel.isLoading
-            )
-        }
+                //If it's the first time that the app is connected than create initialize the viewModel
+                //and display the results
+                if(!this::mainViewModel.isInitialized){
+                    //Initializing the ViewModel
+                    mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
+                    setContent {
+                        //Call the Composable Function to show the title and to compose the LazyVerticalGrid
+                        //This function will get as parameters the resultsList, of course, and two instance of
+                        //the MainActivity that implements the function of two Interfaces. Thanks to these
+                        //instances the LazyVerticalGrid will be able to perform the function needed to open the
+                        //WebView, when an artWork is clicked, and to perform the pagination to get the following
+                        //20 items.
+                        musicResultsView(
+                            liveResults = mainViewModel.liveResults,
+                            openMusicWebViewInterface = this,
+                            activePaginationInterface = this,
+                            isLoading = mainViewModel.isLoading
+                        )
+                    }
+                }
+            }
+            else{
+                Toast.makeText(this, "YOU ARE OFFLINE", Toast.LENGTH_LONG).show()
+
+                //If there's no connection and the viewModel has not been initialized yet, than we
+                //can only display the title
+                if(!this::mainViewModel.isInitialized){
+                    setContent {
+                        musicResultsView(
+                            liveResults = emptyList(),
+                            openMusicWebViewInterface = this,
+                            activePaginationInterface = this,
+                            isLoading = false
+                        )
+                    }
+                }
+            }
+        })
 
     }
 
