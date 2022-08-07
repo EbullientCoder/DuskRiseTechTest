@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import org.intellij.lang.annotations.JdkConstants
 
 @Composable
-fun progressBar(isDisplayed: Boolean){
+fun loadingBar(isDisplayed: Boolean){
     if(isDisplayed){
         Row(modifier = Modifier
             .fillMaxWidth()

@@ -12,6 +12,8 @@ import com.example.techtest.network.ServiceProvider
 import kotlinx.coroutines.*
 
 
+
+
 class MainViewModel: ViewModel() {
     //Here I have a big problem: I've never worked with pagination before.
     //I understand that the pagination is used to get only a fixed number of items when the user
@@ -45,11 +47,10 @@ class MainViewModel: ViewModel() {
     //I could have used the LiveData, but the Jetpack Compose Documentation says that the 'mutableState'
     //is designed to work efficiently with the Composable functions
     private lateinit var results: Deferred<List<Result>?>
-    //var liveResults: List<Result>? by mutableStateOf(listOf())
     var liveResults: MutableList<Result>? by mutableStateOf(mutableListOf())
 
-    //Notify the Circular Loading Bar
-    var isLoading: Boolean by mutableStateOf(false)
+    //Used to notify the Loading Bar when the Results are being fetched by the ServiceProvider
+    var isLoading: Boolean by mutableStateOf(true)
 
 
     init {
@@ -64,6 +65,9 @@ class MainViewModel: ViewModel() {
             //especially because of the artworks to show (even if they are managed asynchronously)
             //results = serviceProvider?.fetchResults()
             results =  async { serviceProvider?.fetchResults() }
+
+            //Notify the Loading bar to stop it's animation
+            if(!results.await().isNullOrEmpty()) isLoading = false
         }
     }
 
@@ -71,8 +75,10 @@ class MainViewModel: ViewModel() {
     //I'm not really proud of how I managed the pagination, but I don't have any more time to polish
     //it (because of the deadline). It's ugly but it works so...
     fun pagination(){
+
         //Simulate slow response
         viewModelScope.launch(Dispatchers.Default) {
+
             //The if statement will block the copy of the results inside the variable that will be
             //observed by the LazyVerticalGrid. The idea is to create a sort of buffer to get chunks of
             //20 results per time.
@@ -88,17 +94,12 @@ class MainViewModel: ViewModel() {
                 else
                     results.await()?.slice(0 until currentItems) as MutableList<Result>?
 
-                //var i = liveResults?.size ?: 0
-                //while(i < currentItems && (i + currentItems) < results.await()?.size!!)
-                //    liveResults?.add(results.await()!![i])
 
                 Log.e(String(), "Coroutine\n " +
                         "liveResults size: ${liveResults?.size}\n " +
                         "results size: ${results.await()!!.size}\n")
             }
         }
-
-        Log.e(String(), "Called")
     }
 
     //Update the currentItems to show 20 more results when needed.
