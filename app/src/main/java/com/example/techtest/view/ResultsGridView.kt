@@ -43,11 +43,11 @@ fun resultsGrid(
                     //Callback the function that will get the other 20 results
                     if(index == liveResults.lastIndex){
                         //Simulate some waiting time to get the response
-                        CoroutineScope(Dispatchers.IO).launch {
+                        /*CoroutineScope(Dispatchers.IO).launch {
                             delay(2000)
                             activePaginationInterface.lastIndexReached()
-                        }
-                        //activePaginationInterface.lastIndexReached()
+                        }*/
+                        activePaginationInterface.lastIndexReached()
                     }
 
                     musicContainer(

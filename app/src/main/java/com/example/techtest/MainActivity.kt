@@ -21,6 +21,7 @@ import com.example.techtest.interfaces.OpenMusicWebViewInterface
 import com.example.techtest.view.resultsGrid
 import com.example.techtest.model.Result
 import com.example.techtest.view.musicWebView
+import com.example.techtest.view.progressBar
 import com.example.techtest.viewmodel.MainViewModel
 
 
@@ -47,7 +48,8 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
             musicResultsView(
                 liveResults = mainViewModel.liveResults,
                 openMusicWebViewInterface = this,
-                activePaginationInterface = this)
+                activePaginationInterface = this,
+                loading = mainViewModel.isLoading)
 
             //Call the pagination function for the first time so the first 20 result will be shown
             mainViewModel.pagination()
@@ -71,7 +73,7 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         mainViewModel.updateItems()
         mainViewModel.pagination()
 
-        //Toast.makeText(this, "Last Index Reached", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Last Index Reached", Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -83,7 +85,8 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
 private fun musicResultsView(
     liveResults: List<Result>?,
     openMusicWebViewInterface: OpenMusicWebViewInterface,
-    activePaginationInterface: ActivePaginationInterface
+    activePaginationInterface: ActivePaginationInterface,
+    loading: Boolean
 ){
     Column() {
         //Display the Title
@@ -95,6 +98,9 @@ private fun musicResultsView(
             modifier = Modifier
                 .padding(top = 15.dp, bottom = 15.dp, start = 20.dp)
         )
+
+        //Progress Bar
+        progressBar(isDisplayed = loading)
 
         //LazyVerticalGrid to display all the results of the Music Feed
         liveResults?.let {
