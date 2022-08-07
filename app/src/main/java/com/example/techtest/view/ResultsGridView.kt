@@ -10,9 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.example.techtest.interfaces.ActivePaginationInterface
 import com.example.techtest.interfaces.OpenMusicWebViewInterface
 import com.example.techtest.model.Result
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 @ExperimentalFoundationApi
@@ -45,11 +43,11 @@ fun resultsGrid(
                     //Callback the function that will get the other 20 results
                     if(index == liveResults.lastIndex){
                         //Simulate some waiting time to get the response
-                        /*GlobalScope.launch {
-                            delay(3000)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            delay(2000)
                             activePaginationInterface.lastIndexReached()
-                        }*/
-                        activePaginationInterface.lastIndexReached()
+                        }
+                        //activePaginationInterface.lastIndexReached()
                     }
 
                     musicContainer(
