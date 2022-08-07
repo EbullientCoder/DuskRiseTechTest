@@ -75,8 +75,6 @@ class MainViewModel: ViewModel() {
     //I'm not really proud of how I managed the pagination, but I don't have any more time to polish
     //it (because of the deadline). It's ugly but it works so...
     fun pagination(){
-
-        //Simulate slow response
         viewModelScope.launch(Dispatchers.Default) {
 
             //The if statement will block the copy of the results inside the variable that will be
