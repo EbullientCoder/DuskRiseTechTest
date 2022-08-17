@@ -1,6 +1,8 @@
 package com.example.techtest
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withCreated
 import com.example.techtest.interfaces.ActivePaginationInterface
 import com.example.techtest.interfaces.OpenMusicWebViewInterface
 import com.example.techtest.view.resultsGrid
@@ -25,8 +28,10 @@ import com.example.techtest.network.ConnectionLiveData
 import com.example.techtest.view.musicWebView
 import com.example.techtest.view.loadingBar
 import com.example.techtest.viewmodel.MainViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
@@ -84,27 +89,30 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         //Notify the User that the song has been clicked
         Toast.makeText(applicationContext, "Opening the WebView", Toast.LENGTH_SHORT).show()
 
-        //L
-
-        GlobalScope.launch {
+        lifecycleScope.launch {
             try {
                 //Connection Check
                 val checkUrl = URL(url)
                 val connection: HttpURLConnection = checkUrl.openConnection() as HttpURLConnection
 
-                //Reachable url
-                if(connection.responseCode == 200)
-                    setContent { musicWebView(url = url) }
-                else
-                    runOnUiThread{
-                        Toast.makeText(applicationContext, "ERROR: Can't open the WebView cause the url is unreachable", Toast.LENGTH_LONG).show()
-                    }
-            }
-            //No Internet
-            catch (e: Exception){
-                runOnUiThread{
-                    Toast.makeText(applicationContext, "ERROR: Can't open the connection", Toast.LENGTH_LONG).show()
+                //Set Message
+                var message = ""
+                if(connection.responseCode == 200){
+                    message = "Opening the WebView"
+
+                    //val intent = Intent(this@MainActivity, )
+                    //startActivity(intent)
                 }
+                else
+                    message = "Can't open the WebView"
+
+                //Display the Message
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                }
+            }
+            catch (e: Exception){
+                Log.e(String(), "WebView Error: Can't open the WebView")
             }
         }
     }
