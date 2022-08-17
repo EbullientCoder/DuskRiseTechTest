@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,32 +40,34 @@ class MainViewModel: ViewModel() {
 
 
     //The ServiceProvider will provide the functions needed to make a connection a get the Json file
-    private var serviceProvider: ServiceProvider = ServiceProvider.getInstance()!!
+    private lateinit var serviceProvider: ServiceProvider
 
     //Items to copy in the live results
     private var currentItems = 20
 
     //I could have used the LiveData, but the Jetpack Compose Documentation says that the 'mutableState'
     //is designed to work efficiently with the Composable functions
-    private lateinit var results: List<Result>
-    var resultsSize: Int by mutableStateOf(0)
-    var liveResults: List<Result> by mutableStateOf(listOf())
+    private var _results: List<Result> = listOf()
+    var results: MutableLiveData<List<Result>> = MutableLiveData(listOf())
+    var resultsSize: MutableLiveData<Int> = MutableLiveData(0)
 
     //Used to notify the Loading Bar when the Results are being fetched by the ServiceProvider
     var isLoading: Boolean by mutableStateOf(true)
 
 
 
-    init {
+    //Function to call when there's internet connection
+    fun networkConnection(){
         //A Network Call is needed to fetch the Json File, and a Network Call can't be executed on
         //the main thread cause it could block the UI
         viewModelScope.launch(Dispatchers.IO) {
+            //Create the ServiceProvider Instance
+            serviceProvider = ServiceProvider.getInstance()!!
+
             //Here will be stored all the results fetched by the ServiceProvider, but the
             //LazyVerticalGrid cannot access them all together, or there will be lag problems,
             //especially because of the artworks to show (even if they are managed asynchronously)
-            //results = async { serviceProvider.fetchResults() }
-            results = serviceProvider.fetchResults()
-            resultsSize = results.size
+            _results = serviceProvider.fetchResults()
 
             //Notify the Loading bar to stop it's animation
             isLoading = false
@@ -81,23 +84,15 @@ class MainViewModel: ViewModel() {
         //The if statement will block the copy of the results inside the variable that will be
         //observed by the LazyVerticalGrid. The idea is to create a sort of buffer to get chunks of
         //20 results per time.
-        if(liveResults.size < results.size){
 
-            //Simulating a slow response when paginating
-            if(liveResults.isNotEmpty()) delay(2000)
+        //Simulating a slow response when paginating
+        if(results.value!!.isNotEmpty()) delay(2000)
 
-            //Assign the new items to the List
-            liveResults = if(currentItems >= results.size)
-                results.slice(results.indices)
-            else
-                results.slice(0 until currentItems)
+        //Assign the new items to the List
+        results.value = if(currentItems >= _results.size) _results
+        else _results.slice(0 until currentItems)
 
-            //Update the next items
-            currentItems += 20
-
-            Log.e(String(), "Results: ${results.size}")
-            Log.e(String(), "Live Results: ${liveResults.size}")
-            Log.e(String(), "Items: $currentItems")
-        }
+        //Update the next items
+        currentItems += 20
     }
 }
