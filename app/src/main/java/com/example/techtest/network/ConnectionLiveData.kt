@@ -59,6 +59,7 @@ class ConnectionLiveData(context: Context) : LiveData<Boolean>() {
         connectivityManager.registerNetworkCallback(requestBuilder,networkCallbacks)
     }
 
+    
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onActive() {
         super.onActive()

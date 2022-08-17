@@ -18,23 +18,22 @@ class ServiceProvider private constructor(){
     companion object{
         //Singleton Instance
         @Volatile
-        private var INSTANCE : ServiceProvider? = null
+        private var instance : ServiceProvider? = null
 
         //Returns the Singleton Instance
         fun getInstance(): ServiceProvider? {
             //Manage the Multi Threads Access
-            synchronized(this){
-                if(INSTANCE == null) INSTANCE = ServiceProvider()
+            if(instance == null)
+                synchronized(this){ instance = ServiceProvider() }
 
-                return INSTANCE
-            }
+            return instance
         }
     }
 
     //Function to fetch all the data from the Json file
     //In this function are used OkHttp3 and Gson
     fun fetchResults(): List<Result>{
-        var results: List<Result> = ArrayList()
+        var results: List<Result> = listOf()
 
         //If there's no internet connection the request will fail
         try {
