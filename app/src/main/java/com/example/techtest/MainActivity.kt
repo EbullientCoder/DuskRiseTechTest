@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.techtest.interfaces.ActivePaginationInterface
 import com.example.techtest.interfaces.OpenMusicWebViewInterface
 import com.example.techtest.view.resultsGrid
@@ -41,54 +42,37 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //View Model Instance
+        mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
         //Get network connection
-        var network = ConnectionLiveData(application)
+        val network = ConnectionLiveData(this)
 
+
+        //Observers---------------------------------------------------------------------------------
         //Observe network connectivity status
-        network.observe(this, { isConnected ->
-            if (isConnected){
-                Toast.makeText(this, "YOU ARE ONLINE", Toast.LENGTH_LONG).show()
+        network.observe(this, {connected ->
+            if(connected){
+                //Notify the user
+                Toast.makeText(this, "You are online", Toast.LENGTH_SHORT).show()
 
-                //If it's the first time that the app is connected than create initialize the viewModel
-                //and display the results
-                if(!this::mainViewModel.isInitialized){
-                    //Initializing the ViewModel
-                    mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-
-                    setContent {
-                        //Call the Composable Function to show the title and to compose the LazyVerticalGrid
-                        //This function will get as parameters the resultsList, of course, and two instance of
-                        //the MainActivity that implements the function of two Interfaces. Thanks to these
-                        //instances the LazyVerticalGrid will be able to perform the function needed to open the
-                        //WebView, when an artWork is clicked, and to perform the pagination to get the following
-                        //20 items.
-                        musicResultsView(
-                            liveResults = mainViewModel.liveResults,
-                            openMusicWebViewInterface = this,
-                            activePaginationInterface = this,
-                            isLoading = mainViewModel.isLoading
-                        )
-                    }
-                }
-            }
-            else{
-                Toast.makeText(this, "YOU ARE OFFLINE", Toast.LENGTH_LONG).show()
-
-                //If there's no connection and the viewModel has not been initialized yet, than we
-                //can only display the title
-                if(!this::mainViewModel.isInitialized){
-                    setContent {
-                        musicResultsView(
-                            liveResults = emptyList(),
-                            openMusicWebViewInterface = this,
-                            activePaginationInterface = this,
-                            isLoading = false
-                        )
-                    }
-                }
+                //Call the viewModel method to fetch the results
+                mainViewModel.networkConnection()
             }
         })
 
+
+        //Observe the Evolution of the Results List
+        mainViewModel.results.observe(this, { results ->
+            setContent {
+                musicResultsView(
+                    liveResults = results,
+                    openMusicWebViewInterface = this,
+                    activePaginationInterface = this,
+                    isLoading = mainViewModel.isLoading
+                )
+            }
+        })
     }
 
 
@@ -99,6 +83,8 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
     override fun imageClicked(url: String) {
         //Notify the User that the song has been clicked
         Toast.makeText(applicationContext, "Opening the WebView", Toast.LENGTH_SHORT).show()
+
+        //L
 
         GlobalScope.launch {
             try {
@@ -123,19 +109,26 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
         }
     }
 
+
     //Active PaginationInterface
     //The last index has been reached, so the results list must be updated
-    override fun lastIndexReached() {
-        GlobalScope.launch {
-            mainViewModel.pagination()
-        }
-
-        if(mainViewModel.liveResults.size < mainViewModel.resultsSize)
+    override fun lastIndexReached(lastIndex: Int) {
+        //Check if it's ok to call pagination function
+        if(lastIndex < mainViewModel.resultsSize){
+            //Notify the User
             Toast.makeText(this, "Loading more Items", Toast.LENGTH_SHORT).show()
+
+            //Call the Pagination function
+            lifecycleScope.launch {
+                mainViewModel.pagination()
+            }
+        }
         else
+            //Notify the User
             Toast.makeText(this, "All the items have been loaded", Toast.LENGTH_SHORT).show()
     }
 }
+
 
 
 
@@ -143,7 +136,7 @@ class MainActivity : ComponentActivity(), OpenMusicWebViewInterface, ActivePagin
 @ExperimentalMaterialApi
 @Composable
 private fun musicResultsView(
-    liveResults: List<Result>?,
+    liveResults: List<Result>,
     openMusicWebViewInterface: OpenMusicWebViewInterface,
     activePaginationInterface: ActivePaginationInterface,
     isLoading: Boolean
@@ -163,12 +156,10 @@ private fun musicResultsView(
         loadingBar(isDisplayed = isLoading)
 
         //LazyVerticalGrid to display all the results of the Music Feed
-        liveResults?.let {
-            resultsGrid(
-                liveResults = liveResults,
-                openMusicWebViewInterface = openMusicWebViewInterface,
-                activePaginationInterface = activePaginationInterface
-            )
-        }
+        resultsGrid(
+            liveResults = liveResults,
+            openMusicWebViewInterface = openMusicWebViewInterface,
+            activePaginationInterface = activePaginationInterface
+        )
     }
 }

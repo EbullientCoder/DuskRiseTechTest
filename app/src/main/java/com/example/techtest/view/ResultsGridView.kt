@@ -42,7 +42,7 @@ fun resultsGrid(
 
                     //Callback the function that will get the other 20 results
                     if(index == liveResults.lastIndex){
-                        activePaginationInterface.lastIndexReached()
+                        activePaginationInterface.lastIndexReached(index)
                     }
 
                     musicContainer(

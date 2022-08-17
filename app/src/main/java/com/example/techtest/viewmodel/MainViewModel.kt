@@ -1,20 +1,21 @@
 package com.example.techtest.viewmodel
 
 
-import android.util.Log
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techtest.model.Result
+import com.example.techtest.network.ConnectionLiveData
 import com.example.techtest.network.ServiceProvider
 import kotlinx.coroutines.*
 
 
-class MainViewModel: ViewModel() {
+
+class MainViewModel(): ViewModel() {
     //Here I have a big problem: I've never worked with pagination before.
     //I understand that the pagination is used to get only a fixed number of items when the user
     //scrolls down. In that way the App will not download all the items together, and this will
@@ -39,20 +40,21 @@ class MainViewModel: ViewModel() {
     //At least I hope you will appreciate my stubbornness and willpower.
 
 
+
     //The ServiceProvider will provide the functions needed to make a connection a get the Json file
     private lateinit var serviceProvider: ServiceProvider
 
     //Items to copy in the live results
     private var currentItems = 20
 
-    //I could have used the LiveData, but the Jetpack Compose Documentation says that the 'mutableState'
-    //is designed to work efficiently with the Composable functions
+    //Results List
     private var _results: List<Result> = listOf()
     var results: MutableLiveData<List<Result>> = MutableLiveData(listOf())
-    var resultsSize: MutableLiveData<Int> = MutableLiveData(0)
+    var resultsSize: Int = 0
 
     //Used to notify the Loading Bar when the Results are being fetched by the ServiceProvider
     var isLoading: Boolean by mutableStateOf(true)
+
 
 
 
@@ -68,6 +70,7 @@ class MainViewModel: ViewModel() {
             //LazyVerticalGrid cannot access them all together, or there will be lag problems,
             //especially because of the artworks to show (even if they are managed asynchronously)
             _results = serviceProvider.fetchResults()
+            resultsSize = _results.size
 
             //Notify the Loading bar to stop it's animation
             isLoading = false
@@ -89,8 +92,10 @@ class MainViewModel: ViewModel() {
         if(results.value!!.isNotEmpty()) delay(2000)
 
         //Assign the new items to the List
-        results.value = if(currentItems >= _results.size) _results
-        else _results.slice(0 until currentItems)
+        withContext(Dispatchers.Main){
+            results.value = if(currentItems >= _results.size) _results
+            else _results.slice(0 until currentItems)
+        }
 
         //Update the next items
         currentItems += 20
